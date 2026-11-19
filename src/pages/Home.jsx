@@ -21,10 +21,25 @@ import { useApp } from '../context/AppContext'
 
 export function Home() {
   const navigate = useNavigate()
-  const { user, enrollments, savedPlan, isRtl, t } = useApp()
+  const { user, enrollments, savedPlan, setPendingPrompt, isRtl, t } = useApp()
   const [selectedServiceCategory, setSelectedServiceCategory] = useState('all')
+  const [promptInput, setPromptInput] = useState('')
 
   const firstName = user?.name ? user.name.split(' ')[0] : (isRtl ? 'علي' : 'Partner')
+
+  const handleAskAI = (queryText) => {
+    const text = (queryText || promptInput).trim()
+    if (!text) return
+    setPendingPrompt(text)
+    navigate('/consultant')
+  }
+
+  const businessStarterChips = t('home.chips') || [
+    isRtl ? 'فحص شامل لمعمارية الكود والرياكت' : 'Audit React 19 architecture & code health',
+    isRtl ? 'أتمتة مهام الشركة بعميل ذكاء اصطناعي بـ n8n' : 'Deploy custom n8n AI agent workflows',
+    isRtl ? 'تحسين سرعة الموقع ومؤشرات Core Web Vitals' : 'Speed up mobile Core Web Vitals to 90+',
+    isRtl ? 'تدقيق قمع المبيعات والإعلانات الرقمية' : 'Scale digital marketing & reduce CAC'
+  ]
 
   // Filter business services based on active filter pill
   const filteredServices =
@@ -86,6 +101,66 @@ export function Home() {
                 : 'Production code audits, AI agent automation, and strategic advisory for modern companies.'
             )}
           </p>
+        </section>
+
+        {/* AI Business Consultant Input Card - Luxury Noir Restrained Editorial */}
+        <section className="bg-[#3D3B30] border border-[#F5F5F5]/12 border-s-2 border-s-[#BFA15A] rounded-2xl p-4 text-start">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 rounded-full border border-[#BFA15A] bg-[#27261F] text-[#BFA15A] flex items-center justify-center font-bold text-[10px]">
+              AI
+            </div>
+            <span className="text-xs font-semibold text-[#F5F5F5] tracking-tight">
+              {t('home.askAiTitle', isRtl ? 'اسأل مستشار الأعمال والشركات الذكي' : 'Ask Guidely Business Intelligence')}
+            </span>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAskAI()
+            }}
+            className="relative"
+          >
+            <textarea
+              value={promptInput}
+              onChange={(e) => setPromptInput(e.target.value)}
+              placeholder={t(
+                'home.askAiPlaceholder',
+                isRtl
+                  ? 'اكتب متطلبات شركتك، المشكلة التقنية، أو هدف العمل... ونقترحلك الحل والخبير المناسب'
+                  : 'Describe your business challenge, technical requirement, or goal... and we will match the right solution & expert.'
+              )}
+              rows={2}
+              className="w-full text-sm text-[#F5F5F5] placeholder:text-[#F5F5F5]/40 bg-[#27261F] border border-[#F5F5F5]/10 rounded-xl p-3 pe-12 focus:outline-none focus:border-[#BFA15A] resize-none text-start"
+            />
+            <button
+              type="submit"
+              disabled={!promptInput.trim()}
+              aria-label={t('home.askAiBtn', isRtl ? 'إرسال الاستفسار' : 'Submit prompt to AI')}
+              className="absolute end-2.5 bottom-3 w-8 h-8 rounded-lg bg-[#BFA15A] text-[#0C0C0C] flex items-center justify-center active:scale-95 disabled:opacity-30 transition-all cursor-pointer font-bold"
+            >
+              <ArrowRight className={`w-4 h-4 stroke-[2] transition-transform ${isRtl ? 'rotate-180' : ''}`} />
+            </button>
+          </form>
+
+          {/* Quick Business Starter Chips */}
+          <div className="mt-3">
+            <span className="text-[10px] font-medium text-[#F5F5F5]/50 block mb-1.5 uppercase tracking-wider">
+              {t('home.chipsTitle', isRtl ? 'استشارات سريعة للشركات:' : 'Quick corporate advisory paths:')}
+            </span>
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+              {Array.isArray(businessStarterChips) && businessStarterChips.map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleAskAI(chip)}
+                  className="shrink-0 text-[11px] font-normal text-[#F5F5F5]/85 bg-[#27261F] border border-[#F5F5F5]/10 rounded-xl px-3 py-1.5 active:bg-[#4E4B3E] hover:border-[#BFA15A]/60 transition-colors cursor-pointer"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Business Service Domain Filter Chips */}

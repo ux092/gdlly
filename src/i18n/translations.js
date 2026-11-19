@@ -53,6 +53,16 @@ export const translations = {
       guestName: 'Partner',
       businessBadge: 'ENTERPRISE & BUSINESS ADVISORY',
       subtitle: 'Production code audits, AI agent automation, and strategic advisory for modern companies.',
+      askAiTitle: 'Ask Guidely Business Intelligence',
+      askAiPlaceholder: 'Describe your business challenge, technical requirement, or goal... and we will match the right solution & expert.',
+      askAiBtn: 'Ask AI',
+      chipsTitle: 'Quick corporate advisory paths:',
+      chips: [
+        'Audit React 19 architecture & code health',
+        'Deploy custom n8n AI agent workflows',
+        'Speed up mobile Core Web Vitals to 90+',
+        'Scale digital marketing & reduce CAC'
+      ],
       servicesHeroTitle: 'Business Advisory & Solutions',
       servicesHeroSubtitle: 'High-impact deliverables from verified principal architects & growth leads',
       allServicesFilter: 'All Services',
@@ -307,6 +317,16 @@ export const translations = {
       guestName: 'شريكنا العزيز',
       businessBadge: 'منصة استشارات وخدمات الأعمال والشركات',
       subtitle: 'فحص كود، أتمتة بالذكاء الاصطناعي، واستشارات استراتيجية لرفع كفاءة ونمو شركتك.',
+      askAiTitle: 'اسأل مستشار الأعمال والشركات الذكي',
+      askAiPlaceholder: 'اكتب متطلبات شركتك، المشكلة التقنية، أو هدف العمل... ونقترحلك الحل والخبير المناسب',
+      askAiBtn: 'اسأل المستشار',
+      chipsTitle: 'استشارات سريعة للشركات:',
+      chips: [
+        'فحص شامل لمعمارية الكود والرياكت',
+        'أتمتة مهام الشركة بعميل ذكاء اصطناعي بـ n8n',
+        'تحسين سرعة الموقع ومؤشرات Core Web Vitals',
+        'تدقيق قمع المبيعات والإعلانات الرقمية'
+      ],
       servicesHeroTitle: 'خدمات الأعمال والاستشارات المعتمدة',
       servicesHeroSubtitle: 'مخرجات فورية واستشارات مباشرة ويا كبار المهندسين وخبراء النمو',
       allServicesFilter: 'كل الخدمات',
