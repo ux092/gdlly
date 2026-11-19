@@ -8,7 +8,8 @@ import {
   AlertTriangle,
   RotateCw,
   FileText,
-  ArrowRight
+  ArrowRight,
+  Copy
 } from 'lucide-react'
 import { AppBar } from '../components/AppBar'
 import { ChatBubble } from '../components/ChatBubble'
@@ -18,7 +19,17 @@ import { useApp } from '../context/AppContext'
 
 export function Consultant() {
   const navigate = useNavigate()
-  const { chatHistory, setChatHistory, pendingPrompt, setPendingPrompt, t, isRtl } = useApp()
+  const {
+    chatHistory,
+    setChatHistory,
+    pendingPrompt,
+    setPendingPrompt,
+    chatSessionId,
+    resetChatSession,
+    showToast,
+    t,
+    isRtl
+  } = useApp()
 
   const [inputMessage, setInputMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -86,7 +97,7 @@ export function Consultant() {
 
     try {
       const updatedHistory = [...chatHistory, userMsg]
-      const response = await sendMessage(text, updatedHistory, 'guidely-session-1')
+      const response = await sendMessage(text, updatedHistory, chatSessionId)
 
       const assistantMsg = {
         id: `msg-${Date.now()}-ai`,
@@ -107,7 +118,7 @@ export function Consultant() {
     } finally {
       setLoading(false)
     }
-  }, [inputMessage, loading, chatHistory, setChatHistory])
+  }, [inputMessage, loading, chatHistory, setChatHistory, chatSessionId])
 
   // Handle pendingPrompt sent from Home or Course Detail
   useEffect(() => {
@@ -125,11 +136,15 @@ export function Consultant() {
     scrollToBottom('auto')
   }, [chatHistory, loading, scrollToBottom])
 
-  // Clear / New Chat
+  // Clear / New Chat - Generates a new sessionId for n8n memory and clears conversation
   const handleNewChat = () => {
-    setChatHistory([])
+    const newId = resetChatSession()
     setError(null)
     setLastFailedMessage(null)
+    showToast(
+      `${t('consultant.newChatStarted') || 'Started new session'} (${newId.slice(-6)})`,
+      'info'
+    )
   }
 
   // Talk to Expert Handoff
@@ -157,7 +172,27 @@ export function Consultant() {
         title={t('consultant.title')}
         subtitle={t('consultant.subtitle')}
         actions={
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            {chatSessionId && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(chatSessionId)
+                  }
+                  showToast(
+                    `${t('consultant.copiedSessionId') || 'Session ID copied to clipboard'}: ${chatSessionId}`,
+                    'success'
+                  )
+                }}
+                title={`Session ID: ${chatSessionId} (${t('consultant.copiedSessionId') || 'Click to copy'})`}
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#3D3B30] border border-[#F5F5F5]/12 text-xs font-mono text-[#BFA15A] hover:border-[#BFA15A]/40 active:bg-[#4E4B3E] transition-colors"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#BFA15A]" />
+                <span className="text-[11px] truncate max-w-[120px]">{chatSessionId}</span>
+                <Copy className="w-3 h-3 text-[#BFA15A]/70" />
+              </button>
+            )}
             {allSources.length > 0 && (
               <button
                 onClick={() => setIsSourcesSheetOpen(true)}
@@ -208,6 +243,30 @@ export function Consultant() {
             <p className="text-xs text-[#F5F5F5]/65 mt-1 max-w-[280px] leading-relaxed">
               {t('consultant.emptySubtitle')}
             </p>
+
+            {chatSessionId && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(chatSessionId)
+                  }
+                  showToast(
+                    `${t('consultant.copiedSessionId') || 'Session ID copied to clipboard'}: ${chatSessionId}`,
+                    'success'
+                  )
+                }}
+                title={t('consultant.copiedSessionId') || 'Click to copy'}
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3D3B30] border border-[#F5F5F5]/12 text-[11px] text-[#F5F5F5]/70 font-mono active:bg-[#4E4B3E] hover:border-[#BFA15A]/40 transition-colors"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#BFA15A]" />
+                <span className="text-[#BFA15A] font-sans font-medium">
+                  {t('consultant.sessionIdLabel') || 'Session ID'}:
+                </span>
+                <span className="truncate max-w-[160px]">{chatSessionId}</span>
+                <Copy className="w-3 h-3 text-[#BFA15A]/70 ms-0.5" />
+              </button>
+            )}
 
             {/* 4 Starter Chips */}
             <div className="mt-6 w-full max-w-sm space-y-2 text-start">

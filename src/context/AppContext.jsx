@@ -143,6 +143,27 @@ export function AppProvider({ children }) {
   // Chat history in localStorage
   const [chatHistory, setChatHistory] = useLocalStorage('guidely_chat_history', [])
 
+  // Persistent Chat Session ID for n8n AI Agent / Simple Memory
+  const [chatSessionId, setChatSessionIdState] = useLocalStorage(
+    'guidely_chat_session_id',
+    'guidely-session-default'
+  )
+
+  // Ensure unique session ID is initialized if empty or default
+  useEffect(() => {
+    if (!chatSessionId || chatSessionId === 'guidely-session-default') {
+      const initialId = `guidely-sess-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`
+      setChatSessionIdState(initialId)
+    }
+  }, [chatSessionId, setChatSessionIdState])
+
+  const resetChatSession = useCallback(() => {
+    const newSessionId = `guidely-sess-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`
+    setChatSessionIdState(newSessionId)
+    setChatHistory([])
+    return newSessionId
+  }, [setChatSessionIdState, setChatHistory])
+
   // Toast Notifications
   const [toasts, setToasts] = useState([])
 
@@ -332,7 +353,10 @@ export function AppProvider({ children }) {
         pendingPrompt,
         setPendingPrompt,
         chatHistory,
-        setChatHistory
+        setChatHistory,
+        chatSessionId,
+        setChatSessionId: setChatSessionIdState,
+        resetChatSession
       }}
     >
       {children}

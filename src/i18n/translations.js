@@ -122,7 +122,10 @@ export const translations = {
       expertHandoffDesc: 'Book a live 1-on-1 strategy session with attached chat context.',
       bookExpertBtn: 'Book Expert',
       offlineError: 'Device is offline. Please check your internet connection.',
-      scrollBottom: 'Scroll to bottom'
+      scrollBottom: 'Scroll to bottom',
+      sessionIdLabel: 'Session ID',
+      newChatStarted: 'Started new session',
+      copiedSessionId: 'Session ID copied to clipboard'
     },
 
     // Courses & Learning
@@ -365,7 +368,10 @@ export const translations = {
       expertHandoffDesc: 'احجز جلسة استراتيجية 1-على-1 مباشرة ويا خبير مع إرفاق سياق المحادثة.',
       bookExpertBtn: 'احجز ويا خبير',
       offlineError: 'يبدو ماكو اتصال بالإنترنت. تأكد من شبكتك وجرب مرة ثانية.',
-      scrollBottom: 'انزل لآخر المحادثة'
+      scrollBottom: 'انزل لآخر المحادثة',
+      sessionIdLabel: 'معرّف الجلسة',
+      newChatStarted: 'بدأت جلسة جديدة بنجاح',
+      copiedSessionId: 'تم نسخ معرّف الجلسة إلى الحافظة'
     },
 
     // Courses & Learning

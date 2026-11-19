@@ -88,7 +88,8 @@ export function CoursePlayer() {
 
     try {
       const prompt = `[Context: Course "${course.title}", Lesson "${activeLesson.title}"] User asks: ${text}`
-      const response = await sendMessage(prompt)
+      const tutorSessionId = `course-${course?.id || 'tutor'}-lesson-${activeLesson?.id || 'main'}`
+      const response = await sendMessage(prompt, tutorMessages, tutorSessionId)
       setTutorMessages((prev) => [
         ...prev,
         {

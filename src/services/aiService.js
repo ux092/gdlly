@@ -1,6 +1,51 @@
 export const DEFAULT_N8N_WEBHOOK_URL =
   'http://localhost:5678/webhook-test/7582cd8f-9977-45de-8153-88f899285434'
 
+/**
+ * Generate or retrieve the stored chat session ID from localStorage
+ */
+export function getOrCreateDefaultSessionId() {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const stored = window.localStorage.getItem('guidely_chat_session_id')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (typeof parsed === 'string' && parsed.trim()) {
+          return parsed.trim()
+        }
+      }
+    } catch {
+      // ignore storage error
+    }
+  }
+  return `guidely-sess-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`
+}
+
+/**
+ * Append sessionId and session_id as query parameters to any webhook URL
+ */
+function appendSessionToUrl(url, sid) {
+  if (!url || !sid) return url
+  try {
+    const isAbsolute = /^https?:\/\//i.test(url)
+    const base = isAbsolute
+      ? undefined
+      : typeof window !== 'undefined'
+      ? window.location.origin
+      : 'http://localhost'
+    const parsed = new URL(url, base)
+    parsed.searchParams.set('sessionId', sid)
+    parsed.searchParams.set('session_id', sid)
+    if (isAbsolute) {
+      return parsed.toString()
+    }
+    return `${parsed.pathname}${parsed.search}`
+  } catch {
+    const sep = url.includes('?') ? '&' : '?'
+    return `${url}${sep}sessionId=${encodeURIComponent(sid)}&session_id=${encodeURIComponent(sid)}`
+  }
+}
+
 function extractAnswerText(data) {
   if (!data) return ''
   if (typeof data === 'string') return data
@@ -26,54 +71,71 @@ function extractAnswerText(data) {
 /**
  * AI Service for Guidely Consultant
  * Dispatches to external n8n webhook (defaulting to http://localhost:5678/webhook-test/7582cd8f-9977-45de-8153-88f899285434),
- * supporting any n8n AI agent response shape and CORS fallback.
+ * attaching sessionId across query params, JSON body, and headers so n8n Simple Memory can track history reliably.
  */
-export async function sendMessage(message, history = [], sessionId = 'guidely-session-1') {
-  const webhookUrl = (import.meta.env.VITE_N8N_WEBHOOK_URL || DEFAULT_N8N_WEBHOOK_URL).trim()
+export async function sendMessage(message, history = [], sessionId = null) {
+  const activeSessionId =
+    sessionId && String(sessionId).trim() !== ''
+      ? String(sessionId).trim()
+      : getOrCreateDefaultSessionId()
+
+  const rawWebhookUrl = (import.meta.env.VITE_N8N_WEBHOOK_URL || DEFAULT_N8N_WEBHOOK_URL).trim()
 
   // If webhook is provided, POST to live n8n workflow
-  if (webhookUrl !== '') {
+  if (rawWebhookUrl !== '') {
+    const targetUrl = appendSessionToUrl(rawWebhookUrl, activeSessionId)
     const payload = {
-      message,
+      sessionId: activeSessionId,
+      session_id: activeSessionId,
+      SessionId: activeSessionId,
       chatInput: message,
+      message,
       prompt: message,
       query: message,
       history: history.map((h) => ({
         role: h.role,
         content: h.content || h.answer || ''
       })),
-      sessionId,
       timestamp: new Date().toISOString()
     }
 
     let response = null
     let responseData = null
 
-    // 1. Direct fetch to webhook endpoint
+    // 1. Direct fetch to webhook endpoint (including sessionId in query, headers, and body)
     try {
-      response = await fetch(webhookUrl, {
+      response = await fetch(targetUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': activeSessionId,
+          'session-id': activeSessionId
+        },
         body: JSON.stringify(payload)
       })
     } catch (directErr) {
       // 2. If direct fetch fails (e.g. CORS preflight on localhost:5678), retry via Vite's proxy
-      if (webhookUrl.includes(':5678/')) {
-        const proxiedPath = webhookUrl.replace(/^https?:\/\/[^/]+(:5678)?/, '')
+      if (rawWebhookUrl.includes(':5678/')) {
+        const proxiedPath = rawWebhookUrl.replace(/^https?:\/\/[^/]+(:5678)?/, '')
+        const targetProxiedUrl = appendSessionToUrl(proxiedPath, activeSessionId)
         try {
-          response = await fetch(proxiedPath, {
+          response = await fetch(targetProxiedUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-session-id': activeSessionId,
+              'session-id': activeSessionId
+            },
             body: JSON.stringify(payload)
           })
         } catch {
           throw new Error(
-            `Unable to reach n8n webhook at ${webhookUrl}. Please ensure your n8n workflow is active or listening for test events.`
+            `Unable to reach n8n webhook at ${rawWebhookUrl}. Please ensure your n8n workflow is active or listening for test events.`
           )
         }
       } else {
         throw new Error(
-          `Failed to connect to ${webhookUrl}: ${directErr.message}. Ensure n8n is running.`
+          `Failed to connect to ${rawWebhookUrl}: ${directErr.message}. Ensure n8n is running.`
         )
       }
     }
@@ -107,7 +169,8 @@ export async function sendMessage(message, history = [], sessionId = 'guidely-se
         answer: rawAnswer || 'Response received from n8n AI Consultant.',
         sources: Array.isArray(parsedData.sources) ? parsedData.sources : [],
         recommendations: Array.isArray(parsedData.recommendations) ? parsedData.recommendations : [],
-        followups: Array.isArray(parsedData.followups) ? parsedData.followups : []
+        followups: Array.isArray(parsedData.followups) ? parsedData.followups : [],
+        sessionId: activeSessionId
       }
     }
   }
