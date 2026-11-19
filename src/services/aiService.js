@@ -1,38 +1,114 @@
+export const DEFAULT_N8N_WEBHOOK_URL =
+  'http://localhost:5678/webhook-test/7582cd8f-9977-45de-8153-88f899285434'
+
+function extractAnswerText(data) {
+  if (!data) return ''
+  if (typeof data === 'string') return data
+  if (Array.isArray(data)) {
+    if (data.length === 0) return ''
+    return extractAnswerText(data[0])
+  }
+  if (typeof data === 'object') {
+    return (
+      data.output ||
+      data.answer ||
+      data.text ||
+      data.response ||
+      data.message ||
+      data.content ||
+      (data.data ? extractAnswerText(data.data) : '') ||
+      JSON.stringify(data)
+    )
+  }
+  return String(data)
+}
+
 /**
  * AI Service for Guidely Consultant
- * Dispatches to external n8n webhook if configured via VITE_N8N_WEBHOOK_URL,
- * or uses a rich, intelligent mock service referencing local catalog data,
- * supporting bilingual English and natural Iraqi Arabic (العربية - العراق).
+ * Dispatches to external n8n webhook (defaulting to http://localhost:5678/webhook-test/7582cd8f-9977-45de-8153-88f899285434),
+ * supporting any n8n AI agent response shape and CORS fallback.
  */
-export async function sendMessage(message, history = [], sessionId = 'default-session') {
-  const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL
+export async function sendMessage(message, history = [], sessionId = 'guidely-session-1') {
+  const webhookUrl = (import.meta.env.VITE_N8N_WEBHOOK_URL || DEFAULT_N8N_WEBHOOK_URL).trim()
 
   // If webhook is provided, POST to live n8n workflow
-  if (webhookUrl && webhookUrl.trim() !== '') {
+  if (webhookUrl !== '') {
+    const payload = {
+      message,
+      chatInput: message,
+      prompt: message,
+      query: message,
+      history: history.map((h) => ({
+        role: h.role,
+        content: h.content || h.answer || ''
+      })),
+      sessionId,
+      timestamp: new Date().toISOString()
+    }
+
+    let response = null
+    let responseData = null
+
+    // 1. Direct fetch to webhook endpoint
     try {
-      const response = await fetch(webhookUrl, {
+      response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, history, sessionId, timestamp: new Date().toISOString() })
+        body: JSON.stringify(payload)
       })
+    } catch (directErr) {
+      // 2. If direct fetch fails (e.g. CORS preflight on localhost:5678), retry via Vite's proxy
+      if (webhookUrl.includes(':5678/')) {
+        const proxiedPath = webhookUrl.replace(/^https?:\/\/[^/]+(:5678)?/, '')
+        try {
+          response = await fetch(proxiedPath, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+        } catch {
+          throw new Error(
+            `Unable to reach n8n webhook at ${webhookUrl}. Please ensure your n8n workflow is active or listening for test events.`
+          )
+        }
+      } else {
+        throw new Error(
+          `Failed to connect to ${webhookUrl}: ${directErr.message}. Ensure n8n is running.`
+        )
+      }
+    }
 
+    if (response) {
       if (!response.ok) {
-        throw new Error(`n8n webhook responded with status ${response.status}`)
+        throw new Error(`n8n webhook error (Status ${response.status}: ${response.statusText})`)
       }
 
-      const data = await response.json()
+      const contentType = response.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
+        responseData = await response.json()
+      } else {
+        const textData = await response.text()
+        try {
+          responseData = JSON.parse(textData)
+        } catch {
+          responseData = textData
+        }
+      }
+
+      const rawAnswer = extractAnswerText(responseData)
+      const parsedData =
+        typeof responseData === 'object' && !Array.isArray(responseData)
+          ? responseData
+          : Array.isArray(responseData) && responseData[0]
+          ? responseData[0]
+          : {}
+
       return {
-        answer: data.answer || 'Here is what I found based on our catalog:',
-        sources: Array.isArray(data.sources) ? data.sources : [],
-        recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
-        followups: Array.isArray(data.followups) ? data.followups : []
+        answer: rawAnswer || 'Response received from n8n AI Consultant.',
+        sources: Array.isArray(parsedData.sources) ? parsedData.sources : [],
+        recommendations: Array.isArray(parsedData.recommendations) ? parsedData.recommendations : [],
+        followups: Array.isArray(parsedData.followups) ? parsedData.followups : []
       }
-    } catch (err) {
-      console.warn('n8n webhook failed, falling back to local mock engine:', err)
-      if (!navigator.onLine) {
-        throw new Error('You appear to be offline. Please check your internet connection.')
-      }
-      throw new Error(`AI service connection error: ${err.message}`)
     }
   }
 

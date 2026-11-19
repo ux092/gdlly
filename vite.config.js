@@ -8,4 +8,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/webhook-test': {
+        target: 'http://localhost:5678',
+        changeOrigin: true
+      },
+      '/webhook': {
+        target: 'http://localhost:5678',
+        changeOrigin: true
+      }
+    }
+  }
 })
