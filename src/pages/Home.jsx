@@ -11,7 +11,7 @@ import { testimonials } from '../data/testimonials'
 import { useApp } from '../context/AppContext'
 
 export function Home() {
-  const { user, enrollments, savedPlan, t } = useApp()
+  const { user, enrollments, savedPlan, isRtl, t } = useApp()
 
   // Active enrolled course for "Continue Learning"
   const activeEnrollment = enrollments[0]
