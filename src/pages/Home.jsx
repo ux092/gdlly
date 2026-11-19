@@ -60,10 +60,7 @@ export function Home() {
       <main className="pt-16 px-4 space-y-6 text-start">
         {/* User Greeting */}
         <section className="pt-2">
-          <p className="text-xs font-medium text-[#BFA15A] uppercase tracking-wider">
-            {t('home.tagline', 'EDITORIAL SKILLS PLATFORM')}
-          </p>
-          <h2 className="text-2xl font-semibold text-[#F5F5F5] tracking-tight mt-0.5">
+          <h2 className="text-2xl font-semibold text-[#F5F5F5] tracking-tight">
             {t('home.greeting', 'Hello, {name} 👋', { name: firstName })}
           </h2>
           <p className="text-xs text-[#F5F5F5]/65 mt-0.5">

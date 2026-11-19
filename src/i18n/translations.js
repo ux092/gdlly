@@ -49,7 +49,6 @@ export const translations = {
 
     // Home Page
     home: {
-      tagline: 'AI-POWERED SKILLS PLATFORM',
       greeting: 'Hello, {name} 👋',
       guestName: 'Learner',
       subtitle: 'What goal or skill would you like to conquer today?',
@@ -295,7 +294,6 @@ export const translations = {
 
     // Home Page
     home: {
-      tagline: 'منصة تطوير المهارات بالذكاء الاصطناعي',
       greeting: 'هلا بيك، {name} 👋',
       guestName: 'يا هلا',
       subtitle: 'شنو الهدف أو المهارة اللي حاب تضبطها وتتطور بيها اليوم؟',
