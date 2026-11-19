@@ -260,7 +260,7 @@ export function Enroll() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               error={errors.name}
-              placeholder={isRtl ? 'مثال: علي الرافدين' : 'e.g. Alex Rivera'}
+              placeholder={isRtl ? 'مثال: علي الحسني' : 'e.g. Ali Al-Hassani'}
               required
             />
 
@@ -270,7 +270,7 @@ export function Enroll() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={errors.email}
-              placeholder="e.g. alex@example.com"
+              placeholder="e.g. ali@example.com"
               required
             />
 

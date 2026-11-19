@@ -16,8 +16,8 @@ export function Profile() {
   const navigate = useNavigate()
   const { user, updateSettings, logoutUser, savedPlan, requests, isRtl, setLanguage: setAppLang, t } = useApp()
 
-  const [name, setName] = useState(user?.name || 'Alex Rivera')
-  const [email, setEmail] = useState(user?.email || 'alex.rivera@example.com')
+  const [name, setName] = useState(user?.name || 'علي الحسني')
+  const [email, setEmail] = useState(user?.email || 'ali@example.com')
   const [language, setLanguage] = useState(user?.language || 'ar-IQ')
   const [notifications, setNotifications] = useState(
     user?.notifications || {

@@ -82,7 +82,7 @@ export function Login() {
               </label>
               <input
                 type="text"
-                placeholder={isRtl ? 'مثال: علي الرافدين' : 'e.g. Alex Rivera'}
+                placeholder={isRtl ? 'مثال: علي الحسني' : 'e.g. Ali Al-Hassani'}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full min-h-[44px] rounded-2xl bg-slate-900 border border-slate-700 px-3.5 py-2.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-start"
@@ -96,7 +96,7 @@ export function Login() {
             </label>
             <input
               type="email"
-              placeholder="e.g. alex@example.com"
+              placeholder="e.g. ali@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full min-h-[44px] rounded-2xl bg-slate-900 border border-slate-700 px-3.5 py-2.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-start"
@@ -127,10 +127,10 @@ export function Login() {
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => handleQuickLogin('Alex Rivera', 'alex.rivera@example.com')}
+              onClick={() => handleQuickLogin('علي الحسني', 'ali@example.com')}
               className="p-2 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-semibold text-slate-300 hover:text-white active:bg-slate-700 transition-colors truncate cursor-pointer"
             >
-              👤 Alex ({isRtl ? 'مطور' : 'Dev'})
+              👤 {isRtl ? 'علي (مطور)' : 'Ali (Dev)'}
             </button>
             <button
               type="button"

@@ -7,11 +7,11 @@ const AppContext = createContext(null)
 export function AppProvider({ children }) {
   // User Authentication
   const [user, setUser] = useLocalStorage('guidely_user', {
-    name: 'Alex Rivera',
-    email: 'alex.rivera@example.com',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-    title: 'Frontend Engineer',
-    language: 'English (US)',
+    name: 'علي الحسني',
+    email: 'ali@example.com',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+    title: 'مطور واجهات ومصمم منتجات',
+    language: 'العربية (العراق)',
     notifications: {
       emailAlerts: true,
       expertReplies: true,
@@ -19,6 +19,18 @@ export function AppProvider({ children }) {
       recommendations: false
     }
   })
+
+  // Automatically migrate legacy placeholder user name to Iraqi name Ali if still cached in localStorage
+  useEffect(() => {
+    if (user && (user.name === 'Alex Rivera' || user.email === 'alex.rivera@example.com')) {
+      setUser((prev) => ({
+        ...prev,
+        name: 'علي الحسني',
+        email: 'ali@example.com',
+        title: prev?.language === 'English (US)' ? 'Frontend & Product Engineer' : 'مطور واجهات ومصمم منتجات'
+      }))
+    }
+  }, [user, setUser])
 
   // Language & Direction Management ('ar-IQ' | 'en')
   const [language, setLanguageState] = useLocalStorage('guidely_language', 'ar-IQ')
@@ -284,22 +296,32 @@ export function AppProvider({ children }) {
   }, [setRequests, showToast])
 
   // Auth Management
-  const loginUser = useCallback((userData) => {
-    setUser({
-      name: userData.name || 'Alex Rivera',
-      email: userData.email || 'alex.rivera@example.com',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-      title: 'Learner',
-      language: 'English (US)',
-      notifications: {
-        emailAlerts: true,
-        expertReplies: true,
-        courseMilestones: true,
-        recommendations: true
-      }
-    })
-    showToast(`Welcome back, ${userData.name || 'Learner'}!`, 'success')
-  }, [setUser, showToast])
+  const loginUser = useCallback(
+    (userData) => {
+      setUser({
+        name: userData.name || 'علي الحسني',
+        email: userData.email || 'ali@example.com',
+        avatar:
+          userData.avatar ||
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+        title: language === 'ar-IQ' ? 'مطور واجهات ومصمم منتجات' : 'Frontend Engineer',
+        language: language === 'ar-IQ' ? 'العربية (العراق)' : 'English (US)',
+        notifications: {
+          emailAlerts: true,
+          expertReplies: true,
+          courseMilestones: true,
+          recommendations: true
+        }
+      })
+      showToast(
+        language === 'ar-IQ'
+          ? `أهلاً وسهلاً بيك، ${userData.name || 'علي'}!`
+          : `Welcome back, ${userData.name || 'Ali'}!`,
+        'success'
+      )
+    },
+    [setUser, showToast, language]
+  )
 
   const logoutUser = useCallback(() => {
     setUser(null)

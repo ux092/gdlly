@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { ArrowRight, Play, BookOpen, Star, Bookmark } from 'lucide-react'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { Play, BookOpen, Star, Bookmark } from 'lucide-react'
 import { AppBar } from '../components/AppBar'
 import { CourseCard } from '../components/CourseCard'
 import { ServiceCard } from '../components/ServiceCard'
@@ -9,27 +9,9 @@ import { courses } from '../data/courses'
 import { services } from '../data/services'
 import { testimonials } from '../data/testimonials'
 import { useApp } from '../context/AppContext'
-import { translations } from '../i18n/translations'
 
 export function Home() {
-  const navigate = useNavigate()
-  const { user, setPendingPrompt, enrollments, savedPlan, isRtl, language, t } = useApp()
-  const [promptInput, setPromptInput] = useState('')
-
-  const activeChips =
-    translations[language]?.home?.chips || [
-      'Master React 19 & Next.js',
-      'Double my freelance rates',
-      'Set up an AI agent with n8n',
-      'Build a mobile design system'
-    ]
-
-  const handleAskAI = (queryText) => {
-    const text = queryText || promptInput.trim()
-    if (!text) return
-    setPendingPrompt(text)
-    navigate('/consultant')
-  }
+  const { user, enrollments, savedPlan, t } = useApp()
 
   // Active enrolled course for "Continue Learning"
   const activeEnrollment = enrollments[0]
@@ -66,64 +48,6 @@ export function Home() {
           <p className="text-xs text-[#F5F5F5]/65 mt-0.5">
             {t('home.subtitle', 'What goal or skill would you like to conquer today?')}
           </p>
-        </section>
-
-        {/* AI Input Card - Luxury Noir Restrained Editorial Hero */}
-        <section className="bg-[#3D3B30] border border-[#F5F5F5]/12 border-s-2 border-s-[#BFA15A] rounded-2xl p-4 text-start">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-6 h-6 rounded-full border border-[#BFA15A] bg-[#27261F] text-[#BFA15A] flex items-center justify-center font-bold text-[10px]">
-              AI
-            </div>
-            <span className="text-xs font-semibold text-[#F5F5F5] tracking-tight">
-              {t('home.askAiTitle', 'Guidely Intelligence')}
-            </span>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleAskAI()
-            }}
-            className="relative"
-          >
-            <textarea
-              value={promptInput}
-              onChange={(e) => setPromptInput(e.target.value)}
-              placeholder={t(
-                'home.askAiPlaceholder',
-                'Tell us your goal. We will build your plan and match verified mentors...'
-              )}
-              rows={2}
-              className="w-full text-sm text-[#F5F5F5] placeholder:text-[#F5F5F5]/40 bg-[#27261F] border border-[#F5F5F5]/10 rounded-xl p-3 pe-12 focus:outline-none focus:border-[#BFA15A] resize-none text-start"
-            />
-            <button
-              type="submit"
-              disabled={!promptInput.trim()}
-              aria-label={t('home.askAiBtn', 'Submit prompt to AI')}
-              className="absolute end-2.5 bottom-3 w-8 h-8 rounded-lg bg-[#BFA15A] text-[#0C0C0C] flex items-center justify-center active:scale-95 disabled:opacity-30 transition-all cursor-pointer font-bold"
-            >
-              <ArrowRight className={`w-4 h-4 stroke-[2] transition-transform ${isRtl ? 'rotate-180' : ''}`} />
-            </button>
-          </form>
-
-          {/* Quick Starter Prompt Chips */}
-          <div className="mt-3">
-            <span className="text-[10px] font-medium text-[#F5F5F5]/50 block mb-1.5 uppercase tracking-wider">
-              {t('home.chipsTitle', 'Starting paths:')}
-            </span>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-              {activeChips.map((chip, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleAskAI(chip)}
-                  className="shrink-0 text-[11px] font-normal text-[#F5F5F5]/85 bg-[#27261F] border border-[#F5F5F5]/10 rounded-xl px-3 py-1.5 active:bg-[#4E4B3E] hover:border-[#BFA15A]/60 transition-colors cursor-pointer"
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-          </div>
         </section>
 
         {/* Categories Horizontal Scroll */}
